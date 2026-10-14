@@ -1,0 +1,288 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Syne', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    transition:
+      background-color 420ms cubic-bezier(0.16, 1, 0.3, 1),
+      color 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono, .tabular-nums {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Smooth Theme Morphing & Sidebar Spring Transitions */
+.theme-morph-surface {
+  transition:
+    background-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 300ms ease,
+    box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-spring {
+  transition:
+    width 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Typing Fade-In Keyframes */
+@keyframes typingFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-typing-fade {
+  animation: typingFadeIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-cursor-blink {
+  animation: cursorBlink 950ms infinite;
+}
+
+/* Liquid Glass Login Panel with Specular Outline */
+.liquid-glass-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.24) 0%,
+    rgba(20, 20, 26, 0.56) 55%,
+    rgba(255, 0, 51, 0.16) 100%
+  );
+  backdrop-filter: blur(26px) saturate(210%);
+  -webkit-backdrop-filter: blur(26px) saturate(210%);
+  border: 1.5px solid rgba(255, 255, 255, 0.48);
+  outline: 2px solid rgba(255, 0, 51, 0.42);
+  outline-offset: 4px;
+  box-shadow:
+    0 24px 64px -12px rgba(0, 0, 0, 0.72),
+    inset 0 1px 2px rgba(255, 255, 255, 0.58),
+    inset 0 -1px 3px rgba(255, 0, 51, 0.24);
+}
+
+/* Text Scaling Accessibility Classes */
+html.text-scale-sm {
+  font-size: 14px;
+}
+html.text-scale-md {
+  font-size: 16px;
+}
+html.text-scale-lg {
+  font-size: 18px;
+}
+
+/* Optional Liquid Glass Theme for Interactive Buttons */
+html.liquid-glass-theme button:not(.no-glass):not(.nav-text-link),
+.liquid-glass-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.05) 55%,
+    rgba(255, 0, 51, 0.1) 100%
+  ) !important;
+  backdrop-filter: blur(18px) saturate(195%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(195%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.38),
+    inset 0 1px 1px rgba(255, 255, 255, 0.38),
+    inset 0 -1px 2px rgba(255, 0, 51, 0.12) !important;
+  transition:
+    background 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Top Navbar & Footer Text Links when Liquid Glass is ON: give breathing room & pill glass capsule */
+html.liquid-glass-theme header nav button,
+html.liquid-glass-theme footer button {
+  padding-left: 0.65rem !important;
+  padding-right: 0.65rem !important;
+  padding-top: 0.3rem !important;
+  padding-bottom: 0.3rem !important;
+  border-radius: 0.55rem !important;
+}
+
+html:not(.dark).liquid-glass-theme button:not(.no-glass):not(.nav-text-link) {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(241, 245, 249, 0.62) 60%,
+    rgba(255, 0, 51, 0.08) 100%
+  ) !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0F172A !important;
+  box-shadow:
+    0 4px 14px -3px rgba(15, 23, 42, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92) !important;
+}
+
+html.liquid-glass-theme button:not(.no-glass):not(.nav-text-link):hover,
+.liquid-glass-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 0, 51, 0.52) !important;
+  box-shadow:
+    0 8px 24px -4px rgba(255, 0, 51, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Focused Video Player #58f01b 1px Outline (for K / Spacebar & F Fullscreen keyboard control) */
+.video-focus-neon:focus,
+.video-focus-neon:focus-visible,
+.video-focus-neon-active {
+  outline: 1px solid #58f01b !important;
+  outline-offset: 0px !important;
+  box-shadow: 0 0 0 1px #58f01b !important;
+}
+
+/* Offscreen rendering optimization for video grids and Watch Later queue lists */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
+/* Optional Custom Green-Left, Blue-Middle-Scroll-Wheel, Red-Right Cursor */
+html.rgb-tri-cursor-active,
+html.rgb-tri-cursor-active * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='32' viewBox='0 0 28 32'%3E%3Crect x='3' y='2' width='22' height='28' rx='11' fill='%23111115' stroke='%23ffffff' stroke-width='1.5'/%3E%3Cpath d='M4.5 13C4.5 7 8.5 3.5 12 3.5V14H4.5V13Z' fill='%2358f01b'/%3E%3Cpath d='M23.5 13C23.5 7 19.5 3.5 16 3.5V14H23.5V13Z' fill='%23FF0033'/%3E%3Crect x='12.2' y='4' width='3.6' height='9.5' rx='1.8' fill='%233b82f6' stroke='%2393c5fd' stroke-width='0.8'/%3E%3Ccircle cx='4' cy='3' r='2.2' fill='%2358f01b'/%3E%3C/svg%3E") 4 3, auto !important;
+}
+
+/* Custom Scrollbar for YouTube Feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.5);
+}
+
+/* Official Google Sign-In Material Button Styling */
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #747775;
+  -webkit-border-radius: 20px;
+  border-radius: 20px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 14px;
+  height: 40px;
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 12px;
+  position: relative;
+  text-align: center;
+  -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
+  transition: background-color .218s, border-color .218s, box-shadow .218s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 400px;
+  min-width: min-content;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px;
+  margin-right: 12px;
+  min-width: 20px;
+  width: 20px;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  -webkit-align-items: center;
+  align-items: center;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  -webkit-flex-grow: 0;
+  flex-grow: 0;
+  font-family: 'Roboto', arial, sans-serif;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  -webkit-transition: opacity .218s;
+  transition: opacity .218s;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gsi-material-button:disabled {
+  cursor: default;
+  background-color: #ffffff61;
+  border-color: #1f1f1f1f;
+}
+
+.gsi-material-button:not(:disabled):hover {
+  -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
+}
+
+.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
+  background-color: #303030;
+  opacity: 8%;
+}
+

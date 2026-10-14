@@ -1,0 +1,277 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Public profile of a registered platform user including subscriber credits, premium membership, and API key status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "subscribersCount": { "type": "number" },
+        "subscriberCredits": { "type": "number" },
+        "subscriptionTier": { "type": "string", "enum": ["free", "base", "plus"] },
+        "subscriptionExpiresAt": { "type": "string", "maxLength": 40 },
+        "lastMonthlyDividendClaim": { "type": "string", "maxLength": 40 },
+        "apiKey": { "type": "string", "maxLength": 120 },
+        "userAge": { "type": "number" },
+        "publicHmacId": { "type": "string", "maxLength": 120 },
+        "identityOptIn": { "type": "boolean" },
+        "phoneVerifiedOptional": { "type": "boolean" },
+        "watchLaterJson": { "type": "string", "maxLength": 60000 },
+        "autoRemoveWatchLaterOnFinish": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "subscribersCount", "createdAt"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Video or Short uploaded or imported with WebP thumbnail, AV1 WebM custom YouTube compression, age rating, and volumetric VR support",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 4000 },
+        "thumbnailUrl": { "type": "string", "minLength": 1, "maxLength": 750000 },
+        "videoUrl": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "youtubeId": { "type": "string", "maxLength": 64 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "tags": { "type": "array", "maxLength": 10 },
+        "duration": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "views": { "type": "number" },
+        "likes": { "type": "number" },
+        "dislikes": { "type": "number" },
+        "isShort": { "type": "boolean" },
+        "isMemberOnly": { "type": "boolean" },
+        "memberCreditsEarned": { "type": "number" },
+        "minAgeRating": { "type": "number" },
+        "aiSafetyNote": { "type": "string", "maxLength": 400 },
+        "isVolumetricVr": { "type": "boolean" },
+        "serverDownloadedTranscoded": { "type": "boolean" },
+        "captionTracksJson": { "type": "string", "maxLength": 12000 },
+        "audioTracksJson": { "type": "string", "maxLength": 12000 },
+        "shortSoundId": { "type": "string", "maxLength": 80 },
+        "shortSoundTitle": { "type": "string", "maxLength": 120 },
+        "shortSoundArtist": { "type": "string", "maxLength": 100 },
+        "creatorIdentityDetectionOptIn": { "type": "boolean" },
+        "creatorCastCredits": { "type": "string", "maxLength": 800 },
+        "authorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorPublicHmacId": { "type": "string", "maxLength": 120 },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "authorAvatar": { "type": "string", "maxLength": 500 },
+        "locationTag": { "type": "string", "maxLength": 150 },
+        "compressionCodec": { "type": "string", "maxLength": 80 },
+        "compressionRatio": { "type": "string", "maxLength": 80 },
+        "originalSizeMb": { "type": "number" },
+        "compressedSizeMb": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "thumbnailUrl", "videoUrl", "category", "duration", "views", "likes", "authorId", "authorName", "createdAt"]
+    },
+    "CommunityPost": {
+      "title": "CommunityPost",
+      "description": "Creator community post with WebP quantized image attachment",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "authorAvatar": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 2500 },
+        "imageWebpUrl": { "type": "string", "maxLength": 750000 },
+        "webpStats": { "type": "string", "maxLength": 120 },
+        "likes": { "type": "number" },
+        "dislikes": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "content", "likes", "dislikes", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "User comment under a video or short with optional Plus priority member badge",
+      "type": "object",
+      "properties": {
+        "videoId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "authorAvatar": { "type": "string", "maxLength": 500 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 1500 },
+        "likes": { "type": "number" },
+        "isPriorityMember": { "type": "boolean" },
+        "memberTier": { "type": "string", "enum": ["free", "base", "plus"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["videoId", "authorId", "authorName", "text", "likes", "createdAt"]
+    },
+    "AdCampaign": {
+      "title": "AdCampaign",
+      "description": "ZTube Ad Campaign purchased using Subscriber Credits at different ad levels",
+      "type": "object",
+      "properties": {
+        "creatorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "creatorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "sponsorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "ctaUrl": { "type": "string", "minLength": 1, "maxLength": 350 },
+        "adLevel": { "type": "string", "enum": ["level_1_basic", "level_2_mid", "level_3_prime"] },
+        "creditsSpent": { "type": "number" },
+        "impressions": { "type": "number" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["creatorId", "creatorName", "title", "sponsorName", "ctaUrl", "adLevel", "creditsSpent", "impressions", "active", "createdAt"]
+    },
+    "CreditTransaction": {
+      "title": "CreditTransaction",
+      "description": "Subscriber Credit ledger transaction for donations, ad purchases, monthly dividends, and member-only view payouts",
+      "type": "object",
+      "properties": {
+        "fromUid": { "type": "string", "maxLength": 128 },
+        "fromName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "toUid": { "type": "string", "maxLength": 128 },
+        "toName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "amount": { "type": "number" },
+        "txType": { "type": "string", "enum": ["donation", "ad_campaign", "subscription", "monthly_dividend", "member_video_payout", "auto_visit_credit", "clawback"] },
+        "note": { "type": "string", "maxLength": 300 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fromUid", "fromName", "toUid", "toName", "amount", "txType", "note", "createdAt"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "User subscription to a video creator channel",
+      "type": "object",
+      "properties": {
+        "subscriberId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "channelId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "channelName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "channelAvatar": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["subscriberId", "channelId", "channelName", "createdAt"]
+    },
+    "TelemetryEvent": {
+      "title": "TelemetryEvent",
+      "description": "Real-time platform telemetry event for AV1 WebM compression, WebP quantization, HTTP Brotli, and hidden captcha movement logs",
+      "type": "object",
+      "properties": {
+        "eventType": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "component": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "latencyMs": { "type": "number" },
+        "compressionSavedKb": { "type": "number" },
+        "codec": { "type": "string", "maxLength": 60 },
+        "status": { "type": "string", "enum": ["ok", "warn", "error"] },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventType", "component", "latencyMs", "compressionSavedKb", "status", "actorId", "details", "createdAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Video category definition with slug, display name, icon symbol, description, badge color, display order, and video count",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "icon": { "type": "string", "maxLength": 60 },
+        "description": { "type": "string", "maxLength": 300 },
+        "color": { "type": "string", "maxLength": 40 },
+        "displayOrder": { "type": "number" },
+        "videoCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["slug", "name", "displayOrder", "createdAt"]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global admin configuration for site features, ad placements, and API sync",
+      "type": "object",
+      "properties": {
+        "adRow1LeftActive": { "type": "boolean" },
+        "adRow2MiddleActive": { "type": "boolean" },
+        "adRow3RightActive": { "type": "boolean" },
+        "adRow1Title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "adRow1Sponsor": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "adRow1CtaUrl": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "adRow2Title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "adRow2Sponsor": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "adRow2CtaUrl": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "adRow3Title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "adRow3Sponsor": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "adRow3CtaUrl": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "enableComments": { "type": "boolean" },
+        "enableUploads": { "type": "boolean" },
+        "enableAiAnalysis": { "type": "boolean" },
+        "enableYoutubeAutoSync": { "type": "boolean" },
+        "youtubeApiKeyConfigured": { "type": "boolean" },
+        "youtubeSyncChannelHandle": { "type": "string", "maxLength": 100 },
+        "playerColorTheme": { "type": "string", "enum": ["neon_green", "sunset_red", "midnight_blue"] },
+        "dynamicBackgroundEnabled": { "type": "boolean" },
+        "dynamicBackgroundAudioReactive": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "adRow1LeftActive",
+        "adRow2MiddleActive",
+        "adRow3RightActive",
+        "adRow1Title",
+        "adRow1Sponsor",
+        "adRow1CtaUrl",
+        "adRow2Title",
+        "adRow2Sponsor",
+        "adRow2CtaUrl",
+        "adRow3Title",
+        "adRow3Sponsor",
+        "adRow3CtaUrl",
+        "enableComments",
+        "enableUploads",
+        "enableAiAnalysis",
+        "enableYoutubeAutoSync",
+        "youtubeApiKeyConfigured",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Public user profiles with subscriber credits, membership tier, and API key"
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/Video" },
+      "description": "Uploaded and imported YouTube videos and Shorts with WebP thumbnail, AV1 WebM custom compression, age rating, and volumetric VR flag"
+    },
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/entities/CommunityPost" },
+      "description": "Creator community posts with WebP quantized images"
+    },
+    "/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/Comment" },
+      "description": "Comments under videos with Plus priority member flag"
+    },
+    "/ad_campaigns/{campaignId}": {
+      "schema": { "$ref": "#/entities/AdCampaign" },
+      "description": "ZTube Ad Campaigns purchased with Subscriber Credits across 3 ad levels"
+    },
+    "/credit_transactions/{txId}": {
+      "schema": { "$ref": "#/entities/CreditTransaction" },
+      "description": "Subscriber Credit donations, ad purchases, subscriptions, and view payouts"
+    },
+    "/subscriptions/{subId}": {
+      "schema": { "$ref": "#/entities/Subscription" },
+      "description": "User channel subscriptions"
+    },
+    "/telemetry_events/{eventId}": {
+      "schema": { "$ref": "#/entities/TelemetryEvent" },
+      "description": "Real-time system, video compression, and hidden captcha kinematic movement telemetry logs"
+    },
+    "/site_settings/{docId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Global site feature toggles and advertisement placement settings"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Platform video categories for categorization, navigation filters, and locational feeds"
+    }
+  }
+}

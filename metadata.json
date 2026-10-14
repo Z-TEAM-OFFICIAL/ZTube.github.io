@@ -1,0 +1,6 @@
+{
+  "name": "ZTube — Video Platform & Laravel Blueprint Studio",
+  "description": "Full-featured YouTube clone with video playback, YouTube metadata sync, comments, admin panel, 3-column ad placement engine, Gemini Pro video analysis, Search & Maps grounding, Gmail sharing, and complete PHP Laravel + React technical specification.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

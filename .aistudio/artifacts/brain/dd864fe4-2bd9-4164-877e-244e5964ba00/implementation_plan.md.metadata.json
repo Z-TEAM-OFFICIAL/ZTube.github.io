@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for the Watch Later feature with dual-sync persistence (Firestore + localStorage), video card & watch page controls, dedicated Watch Later library section with queue playback, drag/manual reordering, watched removal, auto-remove on completion toggle, and performance optimizations.",
+  "updatedAt":  "2026-10-10T09:06:44.707114842Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

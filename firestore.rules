@@ -1,0 +1,404 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'eric.leslie.ford14@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 3. Entity Validation Helpers
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'subscribersCount', 'createdAt']) &&
+        data.keys().hasOnly([
+          'uid', 'displayName', 'photoURL', 'role', 'subscribersCount',
+          'subscriberCredits', 'subscriptionTier', 'subscriptionExpiresAt',
+          'lastMonthlyDividendClaim', 'apiKey', 'userAge',
+          'publicHmacId', 'identityOptIn', 'phoneVerifiedOptional',
+          'watchLaterJson', 'autoRemoveWatchLaterOnFinish', 'createdAt'
+        ]) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500)) &&
+        data.role in ['user', 'admin'] &&
+        data.subscribersCount is number && data.subscribersCount >= 0 &&
+        (!('subscriberCredits' in data) || (data.subscriberCredits is number && data.subscriberCredits >= 0)) &&
+        (!('subscriptionTier' in data) || data.subscriptionTier in ['free', 'base', 'plus']) &&
+        (!('subscriptionExpiresAt' in data) || (data.subscriptionExpiresAt is string && data.subscriptionExpiresAt.size() <= 40)) &&
+        (!('lastMonthlyDividendClaim' in data) || (data.lastMonthlyDividendClaim is string && data.lastMonthlyDividendClaim.size() <= 40)) &&
+        (!('apiKey' in data) || (data.apiKey is string && data.apiKey.size() <= 120)) &&
+        (!('userAge' in data) || (data.userAge is number && data.userAge >= 7)) &&
+        (!('publicHmacId' in data) || (data.publicHmacId is string && data.publicHmacId.size() <= 120)) &&
+        (!('identityOptIn' in data) || data.identityOptIn is bool) &&
+        (!('phoneVerifiedOptional' in data) || data.phoneVerifiedOptional is bool) &&
+        (!('watchLaterJson' in data) || (data.watchLaterJson is string && data.watchLaterJson.size() <= 60000)) &&
+        (!('autoRemoveWatchLaterOnFinish' in data) || data.autoRemoveWatchLaterOnFinish is bool) &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidVideo(data) {
+      return data.keys().hasAll(['title', 'description', 'thumbnailUrl', 'videoUrl', 'category', 'duration', 'views', 'likes', 'authorId', 'authorName', 'createdAt']) &&
+        data.keys().hasOnly([
+          'title', 'description', 'thumbnailUrl', 'videoUrl', 'youtubeId',
+          'category', 'tags', 'duration', 'views', 'likes', 'dislikes', 'isShort',
+          'isMemberOnly', 'memberCreditsEarned', 'minAgeRating', 'aiSafetyNote',
+          'isVolumetricVr', 'serverDownloadedTranscoded',
+          'captionTracksJson', 'audioTracksJson', 'shortSoundId', 'shortSoundTitle', 'shortSoundArtist',
+          'creatorIdentityDetectionOptIn', 'creatorCastCredits',
+          'authorId', 'authorPublicHmacId', 'authorName', 'authorAvatar', 'locationTag',
+          'compressionCodec', 'compressionRatio', 'originalSizeMb', 'compressedSizeMb', 'createdAt'
+        ]) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+        data.description is string && data.description.size() <= 4000 &&
+        data.thumbnailUrl is string && data.thumbnailUrl.size() >= 1 && data.thumbnailUrl.size() <= 750000 &&
+        data.videoUrl is string && data.videoUrl.size() >= 1 && data.videoUrl.size() <= 600 &&
+        (!('youtubeId' in data) || (data.youtubeId is string && data.youtubeId.size() <= 64)) &&
+        data.category is string && data.category.size() >= 1 && data.category.size() <= 64 &&
+        (!('tags' in data) || (data.tags is list && data.tags.size() <= 10 && (data.tags.size() == 0 || (data.tags[0] is string && data.tags[0].size() <= 50)))) &&
+        data.duration is string && data.duration.size() >= 1 && data.duration.size() <= 20 &&
+        data.views is number && data.views >= 0 &&
+        data.likes is number && data.likes >= 0 &&
+        (!('dislikes' in data) || (data.dislikes is number && data.dislikes >= 0)) &&
+        (!('isShort' in data) || data.isShort is bool) &&
+        (!('isMemberOnly' in data) || data.isMemberOnly is bool) &&
+        (!('memberCreditsEarned' in data) || (data.memberCreditsEarned is number && data.memberCreditsEarned >= 0)) &&
+        (!('minAgeRating' in data) || (data.minAgeRating is number && data.minAgeRating >= 7 && data.minAgeRating <= 21)) &&
+        (!('aiSafetyNote' in data) || (data.aiSafetyNote is string && data.aiSafetyNote.size() <= 400)) &&
+        (!('isVolumetricVr' in data) || data.isVolumetricVr is bool) &&
+        (!('serverDownloadedTranscoded' in data) || data.serverDownloadedTranscoded is bool) &&
+        (!('captionTracksJson' in data) || (data.captionTracksJson is string && data.captionTracksJson.size() <= 12000)) &&
+        (!('audioTracksJson' in data) || (data.audioTracksJson is string && data.audioTracksJson.size() <= 12000)) &&
+        (!('shortSoundId' in data) || (data.shortSoundId is string && data.shortSoundId.size() <= 80)) &&
+        (!('shortSoundTitle' in data) || (data.shortSoundTitle is string && data.shortSoundTitle.size() <= 120)) &&
+        (!('shortSoundArtist' in data) || (data.shortSoundArtist is string && data.shortSoundArtist.size() <= 100)) &&
+        (!('creatorIdentityDetectionOptIn' in data) || data.creatorIdentityDetectionOptIn is bool) &&
+        (!('creatorCastCredits' in data) || (data.creatorCastCredits is string && data.creatorCastCredits.size() <= 800)) &&
+        data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        (!('authorPublicHmacId' in data) || (data.authorPublicHmacId is string && data.authorPublicHmacId.size() <= 120)) &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+        (!('authorAvatar' in data) || (data.authorAvatar is string && data.authorAvatar is string && data.authorAvatar.size() <= 500)) &&
+        (!('locationTag' in data) || (data.locationTag is string && data.locationTag.size() <= 150)) &&
+        (!('compressionCodec' in data) || (data.compressionCodec is string && data.compressionCodec.size() <= 80)) &&
+        (!('compressionRatio' in data) || (data.compressionRatio is string && data.compressionRatio.size() <= 80)) &&
+        (!('originalSizeMb' in data) || (data.originalSizeMb is number && data.originalSizeMb >= 0)) &&
+        (!('compressedSizeMb' in data) || (data.compressedSizeMb is number && data.compressedSizeMb >= 0)) &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidPost(data) {
+      return data.keys().hasAll(['authorId', 'authorName', 'content', 'likes', 'dislikes', 'createdAt']) &&
+        data.keys().hasOnly(['authorId', 'authorName', 'authorAvatar', 'content', 'imageWebpUrl', 'webpStats', 'likes', 'dislikes', 'createdAt']) &&
+        data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+        (!('authorAvatar' in data) || (data.authorAvatar is string && data.authorAvatar.size() <= 500)) &&
+        data.content is string && data.content.size() >= 1 && data.content.size() <= 2500 &&
+        (!('imageWebpUrl' in data) || (data.imageWebpUrl is string && data.imageWebpUrl.size() <= 750000)) &&
+        (!('webpStats' in data) || (data.webpStats is string && data.webpStats.size() <= 120)) &&
+        data.likes is number && data.likes >= 0 &&
+        data.dislikes is number && data.dislikes >= 0 &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidComment(data) {
+      return data.keys().hasAll(['videoId', 'authorId', 'authorName', 'text', 'likes', 'createdAt']) &&
+        data.keys().hasOnly([
+          'videoId', 'authorId', 'authorName', 'authorAvatar',
+          'text', 'likes', 'isPriorityMember', 'memberTier', 'createdAt'
+        ]) &&
+        data.videoId is string && data.videoId.size() >= 1 && data.videoId.size() <= 128 && data.videoId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+        (!('authorAvatar' in data) || (data.authorAvatar is string && data.authorAvatar.size() <= 500)) &&
+        data.text is string && data.text.size() >= 1 && data.text.size() <= 1500 &&
+        data.likes is number && data.likes >= 0 &&
+        (!('isPriorityMember' in data) || data.isPriorityMember is bool) &&
+        (!('memberTier' in data) || data.memberTier in ['free', 'base', 'plus']) &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidAdCampaign(data) {
+      return data.keys().hasAll([
+        'creatorId', 'creatorName', 'title', 'sponsorName', 'ctaUrl',
+        'adLevel', 'creditsSpent', 'impressions', 'active', 'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'creatorId', 'creatorName', 'title', 'sponsorName', 'ctaUrl',
+        'adLevel', 'creditsSpent', 'impressions', 'active', 'createdAt'
+      ]) &&
+      data.creatorId is string && data.creatorId.size() >= 1 && data.creatorId.size() <= 128 && data.creatorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.creatorName is string && data.creatorName.size() >= 1 && data.creatorName.size() <= 100 &&
+      data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+      data.sponsorName is string && data.sponsorName.size() >= 1 && data.sponsorName.size() <= 100 &&
+      data.ctaUrl is string && data.ctaUrl.size() >= 1 && data.ctaUrl.size() <= 350 &&
+      data.adLevel in ['level_1_basic', 'level_2_mid', 'level_3_prime'] &&
+      data.creditsSpent is number && data.creditsSpent >= 0 &&
+      data.impressions is number && data.impressions >= 0 &&
+      data.active is bool &&
+      data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidCreditTransaction(data) {
+      return data.keys().hasAll([
+        'fromUid', 'fromName', 'toUid', 'toName', 'amount', 'txType', 'note', 'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'fromUid', 'fromName', 'toUid', 'toName', 'amount', 'txType', 'note', 'createdAt'
+      ]) &&
+      data.fromUid is string && data.fromUid.size() >= 1 && data.fromUid.size() <= 128 &&
+      data.fromName is string && data.fromName.size() >= 1 && data.fromName.size() <= 100 &&
+      data.toUid is string && data.toUid.size() >= 1 && data.toUid.size() <= 128 &&
+      data.toName is string && data.toName.size() >= 1 && data.toName.size() <= 100 &&
+      data.amount is number && data.amount >= 0 &&
+      data.txType in ['donation', 'ad_campaign', 'subscription', 'monthly_dividend', 'member_video_payout', 'auto_visit_credit', 'clawback'] &&
+      data.note is string && data.note.size() <= 300 &&
+      data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidSubscription(data) {
+      return data.keys().hasAll(['subscriberId', 'channelId', 'channelName', 'createdAt']) &&
+        data.keys().hasOnly(['subscriberId', 'channelId', 'channelName', 'channelAvatar', 'createdAt']) &&
+        data.subscriberId is string && data.subscriberId.size() >= 1 && data.subscriberId.size() <= 128 && data.subscriberId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.channelId is string && data.channelId.size() >= 1 && data.channelId.size() <= 128 && data.channelId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.channelId != data.subscriberId &&
+        data.channelName is string && data.channelName.size() >= 1 && data.channelName.size() <= 100 &&
+        (!('channelAvatar' in data) || (data.channelAvatar is string && data.channelAvatar.size() <= 500)) &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidTelemetryEvent(data) {
+      return data.keys().hasAll(['eventType', 'component', 'latencyMs', 'compressionSavedKb', 'status', 'actorId', 'details', 'createdAt']) &&
+        data.keys().hasOnly(['eventType', 'component', 'latencyMs', 'compressionSavedKb', 'codec', 'status', 'actorId', 'details', 'createdAt']) &&
+        data.eventType is string && data.eventType.size() >= 1 && data.eventType.size() <= 64 &&
+        data.component is string && data.component.size() >= 1 && data.component.size() <= 64 &&
+        data.latencyMs is number && data.latencyMs >= 0 &&
+        data.compressionSavedKb is number && data.compressionSavedKb >= 0 &&
+        (!('codec' in data) || (data.codec is string && data.codec.size() <= 60)) &&
+        data.status in ['ok', 'warn', 'error'] &&
+        data.actorId is string && data.actorId.size() >= 1 && data.actorId.size() <= 128 &&
+        data.details is string && data.details.size() <= 500 &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    function isValidSiteSettings(data) {
+      return data.keys().hasAll([
+        'adRow1LeftActive', 'adRow2MiddleActive', 'adRow3RightActive',
+        'adRow1Title', 'adRow1Sponsor', 'adRow1CtaUrl',
+        'adRow2Title', 'adRow2Sponsor', 'adRow2CtaUrl',
+        'adRow3Title', 'adRow3Sponsor', 'adRow3CtaUrl',
+        'enableComments', 'enableUploads', 'enableAiAnalysis',
+        'enableYoutubeAutoSync', 'youtubeApiKeyConfigured', 'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'adRow1LeftActive', 'adRow2MiddleActive', 'adRow3RightActive',
+        'adRow1Title', 'adRow1Sponsor', 'adRow1CtaUrl',
+        'adRow2Title', 'adRow2Sponsor', 'adRow2CtaUrl',
+        'adRow3Title', 'adRow3Sponsor', 'adRow3CtaUrl',
+        'enableComments', 'enableUploads', 'enableAiAnalysis',
+        'enableYoutubeAutoSync', 'youtubeApiKeyConfigured', 'youtubeSyncChannelHandle',
+        'playerColorTheme', 'dynamicBackgroundEnabled', 'dynamicBackgroundAudioReactive', 'watchHistoryEnabled', 'updatedAt'
+      ]) &&
+      data.adRow1LeftActive is bool &&
+      data.adRow2MiddleActive is bool &&
+      data.adRow3RightActive is bool &&
+      data.adRow1Title is string && data.adRow1Title.size() >= 1 && data.adRow1Title.size() <= 120 &&
+      data.adRow1Sponsor is string && data.adRow1Sponsor.size() >= 1 && data.adRow1Sponsor.size() <= 80 &&
+      data.adRow1CtaUrl is string && data.adRow1CtaUrl.size() >= 1 && data.adRow1CtaUrl.size() <= 300 &&
+      data.adRow2Title is string && data.adRow2Title.size() >= 1 && data.adRow2Title.size() <= 120 &&
+      data.adRow2Sponsor is string && data.adRow2Sponsor.size() >= 1 && data.adRow2Sponsor.size() <= 80 &&
+      data.adRow2CtaUrl is string && data.adRow2CtaUrl.size() >= 1 && data.adRow2CtaUrl.size() <= 300 &&
+      data.adRow3Title is string && data.adRow3Title.size() >= 1 && data.adRow3Title.size() <= 120 &&
+      data.adRow3Sponsor is string && data.adRow3Sponsor.size() >= 1 && data.adRow3Sponsor.size() <= 80 &&
+      data.adRow3CtaUrl is string && data.adRow3CtaUrl.size() >= 1 && data.adRow3CtaUrl.size() <= 300 &&
+      data.enableComments is bool &&
+      data.enableUploads is bool &&
+      data.enableAiAnalysis is bool &&
+      data.enableYoutubeAutoSync is bool &&
+      data.youtubeApiKeyConfigured is bool &&
+      (!('youtubeSyncChannelHandle' in data) || (data.youtubeSyncChannelHandle is string && data.youtubeSyncChannelHandle.size() <= 100)) &&
+      (!('playerColorTheme' in data) || data.playerColorTheme in ['neon_green', 'sunset_red', 'midnight_blue']) &&
+      (!('dynamicBackgroundEnabled' in data) || data.dynamicBackgroundEnabled is bool) &&
+      (!('dynamicBackgroundAudioReactive' in data) || data.dynamicBackgroundAudioReactive is bool) &&
+      (!('watchHistoryEnabled' in data) || data.watchHistoryEnabled is bool) &&
+      data.updatedAt is string && data.updatedAt.size() <= 40;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['slug', 'name', 'displayOrder', 'createdAt']) &&
+        data.keys().hasOnly(['slug', 'name', 'icon', 'description', 'color', 'displayOrder', 'videoCount', 'createdAt']) &&
+        data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 64 && data.slug.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 64 &&
+        (!('icon' in data) || (data.icon is string && data.icon.size() <= 60)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 300)) &&
+        (!('color' in data) || (data.color is string && data.color.size() <= 40)) &&
+        data.displayOrder is number && data.displayOrder >= 0 &&
+        (!('videoCount' in data) || (data.videoCount is number && data.videoCount >= 0)) &&
+        data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    // 4. Collection Rules
+    match /users/{userId} {
+      allow get: if isValidId(userId) && existing().uid == userId;
+      allow list: if existing().uid != null;
+      allow create: if isSignedIn() && isValidId(userId) && userId == request.auth.uid &&
+        isValidUser(incoming()) && incoming().uid == request.auth.uid &&
+        (incoming().role == 'user' || isAdmin());
+      allow update: if isSignedIn() && isValidId(userId) && isValidUser(incoming()) &&
+        incoming().uid == existing().uid && incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          (userId == request.auth.uid && incoming().role == existing().role && incoming().diff(existing()).affectedKeys().hasOnly([
+            'displayName', 'photoURL', 'subscribersCount', 'subscriberCredits',
+            'subscriptionTier', 'subscriptionExpiresAt', 'lastMonthlyDividendClaim',
+            'apiKey', 'userAge', 'publicHmacId', 'identityOptIn', 'phoneVerifiedOptional',
+            'watchLaterJson', 'autoRemoveWatchLaterOnFinish'
+          ])) ||
+          (incoming().role == existing().role && incoming().diff(existing()).affectedKeys().hasOnly(['subscriberCredits', 'subscribersCount']))
+        );
+      allow delete: if isAdmin();
+    }
+
+    match /videos/{videoId} {
+      allow get: if isValidId(videoId) && existing().title is string;
+      allow list: if existing().views >= 0;
+      allow create: if isSignedIn() && isValidId(videoId) && isValidVideo(incoming()) &&
+        (incoming().authorId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && isValidId(videoId) && isValidVideo(incoming()) &&
+        incoming().authorId == existing().authorId && incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          (existing().authorId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'description', 'thumbnailUrl', 'category', 'tags', 'locationTag',
+            'isShort', 'isMemberOnly', 'minAgeRating', 'aiSafetyNote', 'isVolumetricVr',
+            'serverDownloadedTranscoded', 'captionTracksJson', 'audioTracksJson',
+            'shortSoundId', 'shortSoundTitle', 'shortSoundArtist',
+            'creatorIdentityDetectionOptIn', 'creatorCastCredits', 'authorPublicHmacId',
+            'compressionCodec', 'compressionRatio', 'originalSizeMb', 'compressedSizeMb'
+          ])) ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['views', 'likes', 'dislikes', 'memberCreditsEarned', 'captionTracksJson', 'audioTracksJson']))
+        );
+      allow delete: if isSignedIn() && isValidId(videoId) && (existing().authorId == request.auth.uid || isAdmin());
+    }
+
+    match /posts/{postId} {
+      allow get: if isValidId(postId) && existing().content is string;
+      allow list: if existing().likes >= 0;
+      allow create: if isSignedIn() && isValidId(postId) && isValidPost(incoming()) &&
+        incoming().authorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(postId) && isValidPost(incoming()) &&
+        incoming().authorId == existing().authorId && incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          (existing().authorId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'imageWebpUrl', 'webpStats'])) ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'dislikes']))
+        );
+      allow delete: if isSignedIn() && isValidId(postId) && (existing().authorId == request.auth.uid || isAdmin());
+    }
+
+    match /comments/{commentId} {
+      allow get: if isValidId(commentId) && existing().text is string;
+      allow list: if existing().likes >= 0;
+      allow create: if isSignedIn() && isValidId(commentId) && isValidComment(incoming()) &&
+        incoming().authorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(commentId) && isValidComment(incoming()) &&
+        incoming().authorId == existing().authorId && incoming().videoId == existing().videoId && incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          (existing().authorId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['text', 'isPriorityMember', 'memberTier'])) ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['likes']))
+        );
+      allow delete: if isSignedIn() && isValidId(commentId) && (existing().authorId == request.auth.uid || isAdmin());
+    }
+
+    match /ad_campaigns/{campaignId} {
+      allow get: if isValidId(campaignId) && existing().title is string;
+      allow list: if existing().impressions >= 0;
+      allow create: if isSignedIn() && isValidId(campaignId) && isValidAdCampaign(incoming()) &&
+        incoming().creatorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(campaignId) && isValidAdCampaign(incoming()) &&
+        incoming().creatorId == existing().creatorId && incoming().createdAt == existing().createdAt && (
+          isAdmin() ||
+          existing().creatorId == request.auth.uid ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['impressions'])
+        );
+      allow delete: if isSignedIn() && isValidId(campaignId) && (existing().creatorId == request.auth.uid || isAdmin());
+    }
+
+    match /credit_transactions/{txId} {
+      allow get: if isValidId(txId) && existing().amount >= 0;
+      allow list: if existing().amount >= 0;
+      allow create: if isSignedIn() && isValidId(txId) && isValidCreditTransaction(incoming()) &&
+        incoming().fromUid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /subscriptions/{subId} {
+      allow get: if isSignedIn() && isValidId(subId) && existing().subscriberId == request.auth.uid;
+      allow list: if isSignedIn() && existing().subscriberId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(subId) && isValidSubscription(incoming()) &&
+        incoming().subscriberId == request.auth.uid && incoming().channelId != request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(subId) && existing().subscriberId == request.auth.uid;
+    }
+
+    match /telemetry_events/{eventId} {
+      allow get: if isValidId(eventId) && existing().latencyMs >= 0;
+      allow list: if existing().latencyMs >= 0;
+      allow create: if isSignedIn() && isValidId(eventId) && isValidTelemetryEvent(incoming()) &&
+        incoming().actorId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /site_settings/{docId} {
+      allow get: if isValidId(docId) && existing().updatedAt is string;
+      allow list: if existing().updatedAt is string;
+      allow create: if isSignedIn() && isValidId(docId) && isValidSiteSettings(incoming());
+      allow update: if isSignedIn() && isValidId(docId) && isValidSiteSettings(incoming()) && (
+        isAdmin() ||
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'adRow1LeftActive', 'adRow2MiddleActive', 'adRow3RightActive',
+          'adRow1Title', 'adRow1Sponsor', 'adRow1CtaUrl',
+          'adRow2Title', 'adRow2Sponsor', 'adRow2CtaUrl',
+          'adRow3Title', 'adRow3Sponsor', 'adRow3CtaUrl',
+          'enableComments', 'enableUploads', 'enableAiAnalysis',
+          'enableYoutubeAutoSync', 'youtubeApiKeyConfigured', 'youtubeSyncChannelHandle',
+          'playerColorTheme', 'dynamicBackgroundEnabled', 'dynamicBackgroundAudioReactive', 'watchHistoryEnabled', 'updatedAt'
+        ])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId) && existing().name is string;
+      allow list: if existing().displayOrder >= 0;
+      allow create: if isSignedIn() && isValidId(categoryId) && isValidCategory(incoming());
+      allow update: if isSignedIn() && isValidId(categoryId) && isValidCategory(incoming()) && (
+        isAdmin() ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['videoCount', 'description', 'icon', 'color', 'displayOrder', 'name'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && request.auth.uid == adminId;
+      allow list, create, update, delete: if false;
+    }
+  }
+}
